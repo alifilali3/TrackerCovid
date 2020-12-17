@@ -20,6 +20,18 @@ public class Flight {
         flight1 = BitmapFactory.decodeResource(res, R.drawable.fly1);
         flight2 = BitmapFactory.decodeResource(res, R.drawable.fly2);
 
+        width = flight1.getWidth();
+        height = flight1.getHeight();
+
+        width /= 4;
+        height /= 4;
+
+        width = (int) (width * screenRatioX);
+        height = (int) (height * screenRatioY);
+
+        flight1 = Bitmap.createScaledBitmap(flight1, width, height, false);
+        flight2 = Bitmap.createScaledBitmap(flight2, width, height, false);
+
         shoot1 = BitmapFactory.decodeResource(res, R.drawable.shoot1);
         shoot2 = BitmapFactory.decodeResource(res, R.drawable.shoot2);
         shoot3 = BitmapFactory.decodeResource(res, R.drawable.shoot3);
