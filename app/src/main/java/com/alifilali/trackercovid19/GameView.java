@@ -1,6 +1,7 @@
 package com.alifilali.trackercovid19;
 import android.content.Context;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.graphics.Canvas;
 public class GameView extends SurfaceView implements Runnable {
@@ -10,7 +11,7 @@ public class GameView extends SurfaceView implements Runnable {
     private int screenX, screenY, score = 0;
     public static float screenRatioX, screenRatioY;
     private Paint paint;
-
+    private Flight flight;
     private Background background1, background2;
     public GameView(Context context, int screenX, int screenY) {
      super(context);
@@ -22,7 +23,11 @@ public class GameView extends SurfaceView implements Runnable {
 
      background1 = new Background(screenX, screenY,getResources());
      background2 = new Background(screenX, screenY,getResources());
+
+        flight = new Flight(this, screenY, getResources());
+
      background2.x = screenX;
+
      paint = new Paint();
 
     }
@@ -47,6 +52,17 @@ public class GameView extends SurfaceView implements Runnable {
         if (background2.x + background2.background.getWidth() < 0) {
             background2.x = screenX;
         }
+        if (flight.isGoingUp)
+            flight.y -= 30 * screenRatioY;
+        else
+            flight.y += 30 * screenRatioY;
+
+        if (flight.y < 0)
+            flight.y = 0;
+
+        if (flight.y >= screenY - flight.height)
+            flight.y = screenY - flight.height;
+
 
 
     }
@@ -58,6 +74,8 @@ public class GameView extends SurfaceView implements Runnable {
             canvas.drawBitmap(background1.background, background1.x, background1.y, paint);
             canvas.drawBitmap(background2.background, background2.x, background2.y, paint);
 
+            canvas.drawBitmap(flight.getFlight(), flight.x, flight.y, paint);
+            getHolder().unlockCanvasAndPost(canvas);
         }
     }
     private void sleep ()
@@ -85,5 +103,23 @@ public class GameView extends SurfaceView implements Runnable {
            e.printStackTrace();
 
        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (event.getX() < screenX / 2) {
+                    flight.isGoingUp = true;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                flight.isGoingUp = false;
+                if (event.getX() > screenX / 2)
+                    flight.toShoot++;
+                break;
+        }
+
+        return true;
     }
 }
