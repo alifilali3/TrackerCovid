@@ -1,11 +1,20 @@
 package com.alifilali.trackercovid19;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.os.Build;
 import android.graphics.Canvas;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 public class GameView extends SurfaceView implements Runnable {
@@ -15,11 +24,20 @@ public class GameView extends SurfaceView implements Runnable {
     private int screenX, screenY, score = 0;
     public static float screenRatioX, screenRatioY;
     private Paint paint;
+    private Bird[] birds;
+    private SharedPreferences prefs;
     private List<Bullet> bullets;
+    private SoundPool soundPool;
+    private int sound;
     private Flight flight;
+    private Random random;
     private Background background1, background2;
+    private GameActivity activity;
+
+
     public GameView(Context context, int screenX, int screenY) {
-     super(context);
+
+        super(context);
 
      this.screenX = screenX;
      this.screenY = screenY;
@@ -45,8 +63,7 @@ public class GameView extends SurfaceView implements Runnable {
            sleep();
        }
     }
-    private void update ()
-    {
+    private void update () {
         background1.x -= 10 * screenRatioX;
         background2.x -= 10 * screenRatioX;
 
@@ -75,9 +92,15 @@ public class GameView extends SurfaceView implements Runnable {
                 trash.add(bullet);
 
             bullet.x += 50 * screenRatioX;
+            for (Bird bird : birds) {
 
-            for (Bullet bullets : trash) {
-                   bullets.remove(bullet);
+                if (Rect.intersects(bird.getCollisionShape(),
+                        bullet.getCollisionShape())) {
+
+                    score++;
+                    bird.x = -500;
+                    bullet.x = screenX + 500;
+                    bird.wasShot = true;
 
                 }
 
@@ -85,6 +108,41 @@ public class GameView extends SurfaceView implements Runnable {
 
         }
 
+        for (Bullet bullets : trash) {
+            bullets.remove(bullet);
+            for (Bird bird : birds) {
+
+                bird.x -= bird.speed;
+
+                if (bird.x + bird.width < 0) {
+
+                    if (!bird.wasShot) {
+                        isGameOver = true;
+                        return;
+                    }
+
+                    int bound = (int) (30 * screenRatioX);
+                    bird.speed = random.nextInt(bound);
+
+                    if (bird.speed < 10 * screenRatioX)
+                        bird.speed = (int) (10 * screenRatioX);
+
+                    bird.x = screenX;
+                    bird.y = random.nextInt(screenY - bird.height);
+
+                    bird.wasShot = false;
+                }
+
+                if (Rect.intersects(bird.getCollisionShape(), flight.getCollisionShape())) {
+
+                    isGameOver = true;
+                    return;
+                }
+
+            }
+
+        }
+    }
     private void draw ()
     {
         if (getHolder().getSurface().isValid()) {
@@ -92,6 +150,15 @@ public class GameView extends SurfaceView implements Runnable {
             Canvas canvas = getHolder().lockCanvas();
             canvas.drawBitmap(background1.background, background1.x, background1.y, paint);
             canvas.drawBitmap(background2.background, background2.x, background2.y, paint);
+            if (isGameOver) {
+                isPlaying = false;
+                canvas.drawBitmap(flight.getDead(), flight.x, flight.y, paint);
+                getHolder().unlockCanvasAndPost(canvas);
+
+                return;
+            }
+            for (Bird bird : birds)
+                canvas.drawBitmap(bird.getBird(), bird.x, bird.y, paint);
 
             canvas.drawBitmap(flight.getFlight(), flight.x, flight.y, paint);
             for (Bullet bullet : bullets)

@@ -31,7 +31,8 @@ public class Flight {
         shoot3 = Bitmap.createScaledBitmap(shoot3, width, height, false);
         shoot4 = Bitmap.createScaledBitmap(shoot4, width, height, false);
         shoot5 = Bitmap.createScaledBitmap(shoot5, width, height, false);
-
+        dead = BitmapFactory.decodeResource(res, R.drawable.dead);
+        dead = Bitmap.createScaledBitmap(dead, width, height, false);
         y = screenY / 2;
         x = (int) (64 * screenRatioX);
 
@@ -75,6 +76,13 @@ public class Flight {
         wingCounter--;
 
         return flight2;
+    }
+    Rect getCollisionShape () {
+        return new Rect(x, y, x + width, y + height);
+    }
+
+    Bitmap getDead () {
+        return dead;
     }
 
 }
