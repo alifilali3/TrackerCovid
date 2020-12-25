@@ -15,7 +15,7 @@ public class Bird {
     Bitmap bird1, bird2, bird3, bird4;
 
     Bird (Resources res) {
-
+ // pour ouvrir la ressource donnée et appeler
         bird1 = BitmapFactory.decodeResource(res, R.drawable.bird1);
         bird2 = BitmapFactory.decodeResource(res, R.drawable.bird2);
         bird3 = BitmapFactory.decodeResource(res, R.drawable.bird3);
